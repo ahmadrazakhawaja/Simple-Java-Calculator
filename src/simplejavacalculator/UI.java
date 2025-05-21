@@ -22,17 +22,12 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import java.awt.Font;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 
 import java.awt.Image;
-import javax.swing.ImageIcon; 
 import java.io.*;
+import java.util.Map;
 
 public class UI implements ActionListener {
    
@@ -118,7 +113,7 @@ public class UI implements ActionListener {
       frame.setSize(450, 450);
       frame.setLocationRelativeTo(null); 
       frame.setResizable(false);
-      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       frame.setIconImage(image.getImage());
       
       text.setFont(textFont);
@@ -226,92 +221,63 @@ public class UI implements ActionListener {
 
    @Override
    public void actionPerformed(ActionEvent e) {
-      final Object source = e.getSource();
-      Double checkNum = null;
+      Object src = e.getSource();
 
-      for (int i = 0; i < 10; i++) {
-         if (source == but[i]) {
+      /* ------------------------------------------------ 1. digits */
+      for (int i = 0; i < 10; i++) {                 // +1 complexity
+         if (src == but[i]) {                       // +1
             text.replaceSelection(buttonValue[i]);
+            text.selectAll();
             return;
          }
       }
 
-    
+      /* ------------------------------------------------ 2. parse current number (if any) */
+      Double value = null;
       try {
-         checkNum = Double.parseDouble(text.getText());
-      } catch(NumberFormatException k) {
+         value = Double.parseDouble(text.getText());   // +1 (try)
+      } catch (NumberFormatException ignored) { }
 
+      if (value == null && src != butCancel) {          // +1
+         return;                                       // nothing to do
       }
 
-      if (checkNum != null || source == butCancel) {
-         if (source == butAdd) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.add, reader()));
-            text.replaceSelection(butAdd.getText());
-         }
+      /* ------------------------------------------------ 3. operations table */
+      Map<Object, Runnable> ops = Map.ofEntries(
+              /* binary */
+              Map.entry(butAdd,       () -> writer(calc.calculateBi(Calculator.BiOperatorModes.ADD,       reader()))),
+              Map.entry(butMinus,     () -> writer(calc.calculateBi(Calculator.BiOperatorModes.MINUS,     reader()))),
+              Map.entry(butMultiply,  () -> writer(calc.calculateBi(Calculator.BiOperatorModes.MULTIPLY,  reader()))),
+              Map.entry(butDivide,    () -> writer(calc.calculateBi(Calculator.BiOperatorModes.DIVIDE,    reader()))),
+              Map.entry(butxpowerofy, () -> writer(calc.calculateBi(Calculator.BiOperatorModes.XPOWEROFY, reader()))),
 
-         if (source == butMinus) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.minus, reader()));
-            text.replaceSelection(butMinus.getText());
-         }
+              /* unary */
+              Map.entry(butSquare,       () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.SQUARE,       reader()))),
+              Map.entry(butSquareRoot,   () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.SQUAREROOT,   reader()))),
+              Map.entry(butOneDividedBy, () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.ONEDIVIDEDBY, reader()))),
+              Map.entry(butCos,          () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.COS,          reader()))),
+              Map.entry(butSin,          () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.SIN,          reader()))),
+              Map.entry(butTan,          () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.TAN,          reader()))),
+              Map.entry(butlog,          () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.LOG,          reader()))),
+              Map.entry(butln,           () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.LN,           reader()))),
+              Map.entry(butrate,         () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.RATE,         reader()))),
+              Map.entry(butabs,          () -> writer(calc.calculateMono(Calculator.MonoOperatorModes.ABS,          reader()))),
 
-         if (source == butMultiply) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.multiply, reader()));
-            text.replaceSelection(butMultiply.getText());
-         }
+              /* misc */
+              Map.entry(butEqual,   () -> writer(calc.calculateEqual(reader()))),
+              Map.entry(butCancel,  () -> writer(calc.reset())),
+              Map.entry(butBinary,  this::parsetoBinary)    // existing method
+      );
 
-         if (source == butDivide) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.divide, reader()));
-            text.replaceSelection(butDivide.getText());
-         }
-         
-         if (source == butxpowerofy) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.xpowerofy, reader()));
-         }
-
-         if (source == butSquare) {
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.square, reader()));
-         }
-
-         if (source == butSquareRoot)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.squareRoot, reader()));
-
-         if (source == butOneDividedBy)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.oneDividedBy, reader()));
-
-         if (source == butCos)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.cos, reader()));
-
-         if (source == butSin)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.sin, reader()));
-
-         if (source == butTan)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.tan, reader()));
-
-         if (source == butlog)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.log, reader()));
-
-         if (source == butln)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.ln, reader())); 
-
-         if (source == butrate)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.rate, reader()));
-
-         if (source == butabs)
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.abs, reader()));
-
-         if (source == butEqual)
-            writer(calc.calculateEqual(reader()));
-
-         if (source == butCancel)
-            writer(calc.reset());
-
-         if (source == butBinary)
-            parsetoBinary();
+      /* ------------------------------------------------ 4. run the matching action */
+      Runnable task = ops.get(src);                     // +1
+      if (task != null) {                               // +1
+         task.run();
+         text.selectAll();
       }
-
-      text.selectAll();
    }
-   
+
+
    private void parsetoBinary() {
       try {
          text.setText("" + Long.toBinaryString(Long.parseLong(text.getText())));

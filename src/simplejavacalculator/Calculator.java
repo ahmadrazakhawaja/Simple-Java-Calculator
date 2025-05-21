@@ -19,37 +19,37 @@ import static java.lang.Math.pow;
 public class Calculator {
 
     public enum BiOperatorModes {
-        normal, add, minus, multiply, divide , xpowerofy 
+        NORMAL, ADD, MINUS, MULTIPLY, DIVIDE , XPOWEROFY
     }
 
     public enum MonoOperatorModes {
-        square, squareRoot, oneDividedBy, cos, sin, tan, log, rate, abs, ln,
+        SQUARE, SQUAREROOT, ONEDIVIDEDBY, COS, SIN, TAN, LOG, RATE, ABS, LN,
     }
 
     private Double num1, num2;
-    private BiOperatorModes mode = BiOperatorModes.normal;
+    private BiOperatorModes mode = BiOperatorModes.NORMAL;
 
     private Double calculateBiImpl() {
-        if (mode.equals(BiOperatorModes.normal)) {
+        if (mode.equals(BiOperatorModes.NORMAL)) {
             return num2;
         }
-        if (mode.equals(BiOperatorModes.add)) {
+        if (mode.equals(BiOperatorModes.ADD)) {
             if (num2 != 0) {
                 return num1 + num2;
             }
 
             return num1;
         }
-        if (mode.equals(BiOperatorModes.minus)) {
+        if (mode.equals(BiOperatorModes.MINUS)) {
             return num1 - num2;
         }
-        if (mode.equals(BiOperatorModes.multiply)) {
+        if (mode.equals(BiOperatorModes.MULTIPLY)) {
             return num1 * num2;
         }
-        if (mode.equals(BiOperatorModes.divide)) {
+        if (mode.equals(BiOperatorModes.DIVIDE)) {
             return num1 / num2;
         }
-        if (mode.equals(BiOperatorModes.xpowerofy)) {
+        if (mode.equals(BiOperatorModes.XPOWEROFY)) {
             return pow(num1,num2);
         }
 
@@ -58,7 +58,7 @@ public class Calculator {
     }
 
     public Double calculateBi(BiOperatorModes newMode, Double num) {
-        if (mode.equals(BiOperatorModes.normal)) {
+        if (mode.equals(BiOperatorModes.NORMAL)) {
             num2 = 0.0;
             num1 = num;
             mode = newMode;
@@ -72,59 +72,42 @@ public class Calculator {
     }
 
     public Double calculateEqual(Double num) {
-        return calculateBi(BiOperatorModes.normal, num);
+        return calculateBi(BiOperatorModes.NORMAL, num);
     }
 
     public Double reset() {
         num2 = 0.0;
         num1 = 0.0;
-        mode = BiOperatorModes.normal;
+        mode = BiOperatorModes.NORMAL;
 
         return NaN;
     }
 
     
     public Double calculateMono(MonoOperatorModes newMode, Double num) {
-        if (newMode.equals(MonoOperatorModes.square)) {
-            return num * num;
-        }
-        if (newMode.equals(MonoOperatorModes.squareRoot)) {
-            return Math.sqrt(num);
-        }
-        if (newMode.equals(MonoOperatorModes.oneDividedBy)) {
-            return 1 / num;
-        }
-        if (newMode.equals(MonoOperatorModes.cos)) {
-            return Math.cos(Math.toRadians(num));
-        }
-        if (newMode.equals(MonoOperatorModes.sin)) {
-            return Math.sin(Math.toRadians(num));
-        }
-        if (newMode.equals(MonoOperatorModes.tan)) {
-            if (num == 0 || num % 180 == 0 ) {
-                return 0.0;
-            }
-            if (num % 90 == 0.0 && num % 180 != 0.0) {
-                return NaN;
-            }
+        return switch (newMode) {
+            case SQUARE       -> num * num;
+            case SQUAREROOT   -> Math.sqrt(num);
+            case ONEDIVIDEDBY -> 1.0 / num;
+            case COS          -> Math.cos(Math.toRadians(num));
+            case SIN          -> Math.sin(Math.toRadians(num));
+            case TAN          -> tanDeg(num);
+            case LOG          -> Math.log10(num);
+            case LN           -> Math.log(num);
+            case RATE         -> num / 100.0;
+            case ABS          -> Math.abs(num);
+        };
+    }
 
-            return Math.tan(Math.toRadians(num));
+    private static double tanDeg(double degrees) {
+        if (degrees == 0 || degrees % 180 == 0 ) {
+            return 0.0;
         }
-        if (newMode.equals(MonoOperatorModes.log)) {
-            return log10(num);
-        }
-        if (newMode.equals(MonoOperatorModes.ln)) {
-            return log(num);
-        }
-        if (newMode.equals(MonoOperatorModes.rate) ) {
-            return num / 100;
-        }
-        if (newMode.equals(MonoOperatorModes.abs)){
-            return Math.abs(num);
+        if (degrees % 90 == 0.0 && degrees % 180 != 0.0) {
+            return NaN;
         }
 
-        // never reach
-        throw new Error();
+        return Math.tan(Math.toRadians(degrees));
     }
 
 }
